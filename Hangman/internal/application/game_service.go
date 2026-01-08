@@ -90,13 +90,13 @@ func (gs *GameService) getNumber(catOrDiff string) int {
 
 func (gs *GameService) CorrectNumber(number int, catOrDiff string) bool {
 	if catOrDiff == "category" {
-		if data.One <= number && number <= data.Five {
+		if data.MinCategoryNumber <= number && number <= data.MaxCategoryNumber {
 			return true
 		} else {
 			return false
 		}
 	} else {
-		if data.One <= number && number <= data.Three {
+		if data.MinDifficulty <= number && number <= data.MaxDifficulty {
 			return true
 		} else {
 			return false
@@ -142,7 +142,7 @@ func (gs *GameService) launchGuessingIterations() {
 }
 
 func (gs *GameService) showHangman() {
-	fmt.Println(data.Stages[8 - gs.game.GetAttemps()])
+	gs.io.Write(data.Stages[8 - gs.game.GetAttemps()])
 }
 
 func (gs *GameService) NonInteractiveMode() {
@@ -159,8 +159,8 @@ func (gs *GameService) NonInteractiveMode() {
 	fmt.Print(gs.game.GetGuessingWord())
 
 	if gs.game.CheckForVictory() {
-		fmt.Print(";POS\n")
+		gs.io.Write(";POS\n")
 	} else {
-		fmt.Print(";NEG\n")
+		gs.io.Write(";NEG\n")
 	}
 }

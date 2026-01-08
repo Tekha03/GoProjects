@@ -1,8 +1,9 @@
 package data
 
-const One = 1
-const Five = 5
-const Three = 3
+const MinCategoryNumber = 1
+const MaxCategoryNumber = 5
+const MinDifficulty = 1
+const MaxDifficulty = 3
 const AttemptsDefault = 8
 
 type Difficulty int
