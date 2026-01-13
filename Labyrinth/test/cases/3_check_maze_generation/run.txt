@@ -1,0 +1,1 @@
+go run ../cmd/app generate -a dfs -h 1 -w 1 -o tests/tmp/3_check_maze_generation.txt
