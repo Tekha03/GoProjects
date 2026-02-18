@@ -129,11 +129,13 @@ marketplace/
  ├── product-service/
  │    ├── cmd/
  │    │    └── main.go
+ |    ├── internal/
+ |    |    └── handler.go
  │    ├── Dockerfile
+ |    ├── go.mod
  ├── docker-compose.yml
  └── docs/
       └── container_diagram.puml
- ├── go.mod
  ```
 
 ### Вывод
