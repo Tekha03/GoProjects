@@ -27,18 +27,7 @@
 
 ## C4 Model
 
-### Level 1 — System Context
-
-Marketplace Platform взаимодействует с:
-
-- **Buyer** (покупатель)
-- **Seller** (продавец)
-- **Payment Provider** (внешний платёжный сервис)
-- **Notification Provider** (Email/SMS сервис)
-
-Диаграмма: [docs/architecture.puml](docs/architecture.puml)
-
-### Level 2 — Container Diagram
+### Container Diagram
 
 Система разделена на следующие контейнеры:
 
@@ -135,6 +124,7 @@ curl localhost:8080/health
 
 ### Структура проекта
 
+```code
 marketplace/
  ├── product-service/
  │    ├── cmd/
@@ -144,6 +134,7 @@ marketplace/
  └── docs/
       └── container_diagram.puml
  ├── go.mod
+ ```
 
 ### Вывод
 
