@@ -1,0 +1,7 @@
+version: "3.9"
+
+services:
+  product-service:
+    build: ./product-service
+    ports:
+      - "8080:8080"
