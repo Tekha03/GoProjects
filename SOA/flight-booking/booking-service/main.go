@@ -15,6 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	pb "flight-booking/booking-service/proto/flight/v1"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -90,7 +91,7 @@ func initDB() *pgxpool.Pool {
 		os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
 	db, _ := pgxpool.New(context.Background(), connStr)
 
-	_, _ = db.Exec(context.Background(), `
+	result, err := db.Exec(context.Background(), `
 		CREATE TABLE IF NOT EXISTS bookings (
 			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 			user_id TEXT NOT NULL,
@@ -103,6 +104,11 @@ func initDB() *pgxpool.Pool {
 			created_at TIMESTAMPTZ DEFAULT NOW()
 		);
 	`)
+
+	if err != nil {
+		log.Fatalf("Migration failed: %v", err)
+	}
+	log.Printf("Migration executed, affected rows: %d", result.RowsAffected())
 	return db
 }
 
@@ -171,6 +177,63 @@ func main() {
 		_, _ = db.Exec(context.Background(), `UPDATE bookings SET status = 'CANCELLED' WHERE id = $1`, id)
 		flightClient.ReleaseReservation(c.Request.Context(), &pb.ReleaseReservationRequest{BookingId: id})
 		c.JSON(200, gin.H{"status": "cancelled"})
+	})
+
+	r.GET("/bookings/:id", func(c *gin.Context) {
+		id := c.Param("id")
+		var b struct {
+			ID             string  `json:"id"`
+			UserID         string  `json:"user_id"`
+			FlightID       string  `json:"flight_id"`
+			PassengerName  string  `json:"passenger_name"`
+			TotalPrice     float64 `json:"total_price"`
+			Status         string  `json:"status"`
+		}
+		err := db.QueryRow(context.Background(), `SELECT id, user_id, flight_id, passenger_name, total_price, status
+			FROM bookings WHERE id = $1`, id).Scan(&b.ID, &b.UserID, &b.FlightID, &b.PassengerName, &b.TotalPrice, &b.Status)
+		if err != nil {
+			c.JSON(404, gin.H{"error": "booking not found"})
+			return
+		}
+		c.JSON(200, b)
+	})
+
+	r.GET("/bookings", func(c *gin.Context) {
+		userID := c.Query("user_id")
+		rows, err := db.Query(context.Background(), `
+			SELECT id, flight_id, passenger_name, total_price, status
+			FROM bookings WHERE user_id = $1`, userID)
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		defer rows.Close()
+
+		var bookings []map[string]interface{}
+		for rows.Next() {
+			var (
+				id            string
+				flightID      string
+				passengerName string
+				totalPrice    float64
+				status        int
+			)
+			if err := rows.Scan(&id, &flightID, &passengerName, &totalPrice, &status); err != nil {
+				c.JSON(500, gin.H{"error": err.Error()})
+				return
+			}
+
+			b := map[string]interface{}{
+				"id":             id,
+				"flight_id":      flightID,
+				"passenger_name": passengerName,
+				"total_price":    totalPrice,
+				"status":         status,
+			}
+			bookings = append(bookings, b)
+		}
+
+		c.JSON(200, bookings)
 	})
 
 	log.Println("Booking Service ready on :8080")

@@ -19,20 +19,73 @@ services:
     ports: ["5434:5432"]
     volumes: [flight-data:/var/lib/postgresql/data]
 
-  redis-node-0: { image: bitnamilegacy/redis-cluster:latest, volumes: [redis-data-0:/bitnami/redis/data], environment: { REDIS_CLUSTER_CREATOR: yes, REDIS_CLUSTER_REPLICAS: 1, REDIS_NODES: "redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5"} }
-  redis-node-1: { image: bitnamilegacy/redis-cluster:latest, volumes: [redis-data-1:/bitnami/redis/data], environment: { REDIS_PASSWORD: bitnami, REDIS_NODES: "redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5" } }
-  redis-node-2: { image: bitnamilegacy/redis-cluster:latest, volumes: [redis-data-2:/bitnami/redis/data], environment: { REDIS_PASSWORD: bitnami, REDIS_NODES: "redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5" } }
-  redis-node-3: { image: bitnamilegacy/redis-cluster:latest, volumes: [redis-data-3:/bitnami/redis/data], environment: { REDIS_PASSWORD: bitnami, REDIS_NODES: "redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5" } }
-  redis-node-4: { image: bitnamilegacy/redis-cluster:latest, volumes: [redis-data-4:/bitnami/redis/data], environment: { REDIS_PASSWORD: bitnami, REDIS_NODES: "redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5" } }
+  redis-node-0:
+    image: bitnamilegacy/redis-cluster:latest
+    environment:
+      - REDIS_PASSWORD=bitnami
+      - REDIS_NODES=redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5
+    volumes:
+      - redis-data-0:/bitnami/redis/data
+    networks:
+      - default
+
+  redis-node-1:
+    image: bitnamilegacy/redis-cluster:latest
+    environment:
+      - REDIS_PASSWORD=bitnami
+      - REDIS_NODES=redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5
+    volumes:
+      - redis-data-1:/bitnami/redis/data
+    networks:
+      - default
+
+  redis-node-2:
+    image: bitnamilegacy/redis-cluster:latest
+    environment:
+      - REDIS_PASSWORD=bitnami
+      - REDIS_NODES=redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5
+    volumes:
+      - redis-data-2:/bitnami/redis/data
+    networks:
+      - default
+
+  redis-node-3:
+    image: bitnamilegacy/redis-cluster:latest
+    environment:
+      - REDIS_PASSWORD=bitnami
+      - REDIS_NODES=redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5
+    volumes:
+      - redis-data-3:/bitnami/redis/data
+    networks:
+      - default
+
+  redis-node-4:
+    image: bitnamilegacy/redis-cluster:latest
+    environment:
+      - REDIS_PASSWORD=bitnami
+      - REDIS_NODES=redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5
+    volumes:
+      - redis-data-4:/bitnami/redis/data
+    networks:
+      - default
+
   redis-node-5:
     image: bitnamilegacy/redis-cluster:latest
-    depends_on: [redis-node-0, redis-node-1, redis-node-2, redis-node-3, redis-node-4]
-    volumes: [redis-data-5:/bitnami/redis/data]
     environment:
-      REDIS_PASSWORD: bitnami
-      REDIS_CLUSTER_REPLICAS: 1
-      REDIS_CLUSTER_CREATOR: yes
-      REDIS_NODES: "redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5"
+      - REDIS_PASSWORD=bitnami
+      - REDIS_CLUSTER_REPLICAS=1
+      - REDIS_CLUSTER_CREATOR=yes
+      - REDIS_NODES=redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5
+    volumes:
+      - redis-data-5:/bitnami/redis/data
+    depends_on:
+      - redis-node-0
+      - redis-node-1
+      - redis-node-2
+      - redis-node-3
+      - redis-node-4
+    networks:
+      - default
 
   flight-service:
     build: ./flight-service
