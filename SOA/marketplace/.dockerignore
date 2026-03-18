@@ -1,7 +1,0 @@
-.git
-README.md
-.vscode
-.idea
-*.log
-Dockerfile
-.dockerignore

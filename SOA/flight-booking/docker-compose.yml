@@ -1,0 +1,79 @@
+services:
+  booking-db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: booking
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports: ["5433:5432"]
+    volumes: [booking-data:/var/lib/postgresql/data]
+
+  flight-db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: flight
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports: ["5434:5432"]
+    volumes: [flight-data:/var/lib/postgresql/data]
+
+  redis-node-0: { image: bitnamilegacy/redis-cluster:latest, volumes: [redis-data-0:/bitnami/redis/data], environment: { REDIS_CLUSTER_CREATOR: yes, REDIS_CLUSTER_REPLICAS: 1, REDIS_NODES: "redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5"} }
+  redis-node-1: { image: bitnamilegacy/redis-cluster:latest, volumes: [redis-data-1:/bitnami/redis/data], environment: { REDIS_PASSWORD: bitnami, REDIS_NODES: "redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5" } }
+  redis-node-2: { image: bitnamilegacy/redis-cluster:latest, volumes: [redis-data-2:/bitnami/redis/data], environment: { REDIS_PASSWORD: bitnami, REDIS_NODES: "redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5" } }
+  redis-node-3: { image: bitnamilegacy/redis-cluster:latest, volumes: [redis-data-3:/bitnami/redis/data], environment: { REDIS_PASSWORD: bitnami, REDIS_NODES: "redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5" } }
+  redis-node-4: { image: bitnamilegacy/redis-cluster:latest, volumes: [redis-data-4:/bitnami/redis/data], environment: { REDIS_PASSWORD: bitnami, REDIS_NODES: "redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5" } }
+  redis-node-5:
+    image: bitnamilegacy/redis-cluster:latest
+    depends_on: [redis-node-0, redis-node-1, redis-node-2, redis-node-3, redis-node-4]
+    volumes: [redis-data-5:/bitnami/redis/data]
+    environment:
+      REDIS_PASSWORD: bitnami
+      REDIS_CLUSTER_REPLICAS: 1
+      REDIS_CLUSTER_CREATOR: yes
+      REDIS_NODES: "redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5"
+
+  flight-service:
+    build: ./flight-service
+    restart: always
+    depends_on: [flight-db, redis-node-0]
+    ports: ["50051:50051"]
+    environment:
+      DB_HOST: flight-db
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: password
+      DB_NAME: flight
+      REDIS_PASSWORD: bitnami
+      API_KEY: super-secret-key-12345
+      PORT: 50051
+
+  booking-service:
+    build: ./booking-service
+    restart: always
+    depends_on: [booking-db, flight-service]
+    ports: ["8080:8080"]
+    environment:
+      DB_HOST: booking-db
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: password
+      DB_NAME: booking
+      FLIGHT_GRPC_ADDR: flight-service:50051
+      FLIGHT_API_KEY: super-secret-key-12345
+      CB_FAILURE_THRESHOLD: 5
+      CB_TIMEOUT: 30s
+      CB_RESET_TIMEOUT: 10s
+      RETRY_MAX: 3
+      PORT: 8080
+
+volumes:
+  booking-data: {}
+  flight-data: {}
+  redis-data-0: {}
+  redis-data-1: {}
+  redis-data-2: {}
+  redis-data-3: {}
+  redis-data-4: {}
+  redis-data-5: {}
